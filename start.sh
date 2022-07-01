@@ -2,18 +2,33 @@
 #!/bin/bash
 
 
-mysql -uroot -p -e "create table project.project_sql(custid integer(10) primary key not null,username varchar(30),quote_count varchar(30),ip varchar(30),entry_time varchar(30),prp_1 varchar(30),prp_2 varchar(30),prp_3 varchar(30),ms varchar(30),http_type varchar(30),purchase_category varchar(30),total_count varchar(30),purchase_sub_category varchar(30),http_info varchar(30),status_code integer(10),curr_time bigint);"
+mysql -uroot -p -e "create table project.main_table(custid integer(10) primary key not null,
+username varchar(30),
+quote_count varchar(30),
+ip varchar(30),
+entry_time varchar(30),
+prp_1 varchar(30),
+prp_2 varchar(30),
+prp_3 varchar(30),
+ms varchar(30),
+http_type varchar(30),
+purchase_category varchar(30),
+total_count varchar(30),
+purchase_sub_category varchar(30),
+http_info varchar(30),status_code integer(10),curr_time bigint);"
 
 mysql --local-infile=1 -uroot -pWelcome@123 -e "set global local_infile=1;
-load data local infile '/home/saif/chary/project/Day_1.csv' into table project.project_sql fields terminated by ',';
-update project.project_sql set curr_time = CURRENT_TIMESTAMP() + 1 where curr_time IS NULL;
+load data local infile '/home/saif/chary/project/Day_1.csv' into table project.main_table fields terminated by ',';
+update project.main_table set curr_time = CURRENT_TIMESTAMP() + 1 where curr_time IS NULL;
 "
 
-sqoop import --connect jdbc:mysql://localhost:3306/project?useSSL=False --username root --password Welcome@123 --query 'select custid,username,quote_count,ip,entry_time,prp_1,prp_2,prp_3,ms,http_type,purchase_category,total_count,purchase_sub_category,http_info,status_code,curr_time from project_sql where $CONDITIONS' --split-by custid --target-dir /user/saif/HFS/output/project_1;
+sqoop import --connect jdbc:mysql://localhost:3306/project?useSSL=False --username root --password Welcome@123 
+--query 'select custid,username,quote_count,ip,entry_time,prp_1,prp_2,prp_3,ms,http_type,purchase_category,total_count,purchase_sub_category,http_info,status_code,curr_time from project_sql where $CONDITIONS' 
+--split-by custid --target-dir /user/saif/HFS/output/project_1;
 
 
 hive -e "
-create table project_hive.project_int (
+create table project_hive.temparary_table (
 custid int,
 username string,
 quote_count string,
@@ -33,7 +48,7 @@ curr_time BIGINT
 )
 row format delimited fields terminated by ',';"
 
-hive -e "load data inpath '/user/saif/HFS/output/project_1' into table project_hive.project_int;"
+hive -e "load data inpath '/user/saif/HFS/output/project_1' into table project_hive.temparary_table;"
 
 
 hive -e "create external table project_hive.project_int_par(
