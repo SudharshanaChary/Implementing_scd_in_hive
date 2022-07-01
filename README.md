@@ -1,1 +1,1 @@
-# Implementing_scd_in_hive
+# Implementing_SCD_1_in_Hive
